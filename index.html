@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#e2571c">
+<title>Travel Voice</title>
+<style>[hidden]{display:none!important}body{margin:0}:root{padding-top:env(safe-area-inset-top,0px)}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one column, boarding-pass cards — a source stub torn from a translated ticket; sticky tab bar at the bottom like a native app */
+:root{
+  --bg:#eef1f4; --surface:#ffffff; --surface-2:#f5f7f9; --ink:#14212e; --muted:#5c6b79; --line:#d6dde4;
+  --accent:#e2571c; --accent-ink:#ffffff; --accent-soft:#fbe6dc; --go:#13795b; --go-soft:#dcefe7; --warn:#a15c00;
+  --f-display:'Readex Pro','IBM Plex Sans Arabic',system-ui,sans-serif;
+  --f-body:'IBM Plex Sans Arabic','Readex Pro',system-ui,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e151c; --surface:#17212b; --surface-2:#1d2935; --ink:#e9eef3; --muted:#93a3b2; --line:#2a3846;
+  --accent:#ff7a3d; --accent-ink:#1a0d05; --accent-soft:#3a2216; --go:#3ecf9a; --go-soft:#14352a; --warn:#f0b35a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e151c; --surface:#17212b; --surface-2:#1d2935; --ink:#e9eef3; --muted:#93a3b2; --line:#2a3846;
+  --accent:#ff7a3d; --accent-ink:#1a0d05; --accent-soft:#3a2216; --go:#3ecf9a; --go-soft:#14352a; --warn:#f0b35a; color-scheme:dark}
+
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;direction:rtl}
+*{box-sizing:border-box}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 110px;display:flex;flex-direction:column;gap:14px}
+
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:38px;height:38px;border-radius:10px;background:var(--accent);display:grid;place-items:center}
+.logo svg{width:22px;height:22px}
+h1{font-family:var(--f-display);font-size:1.25rem;font-weight:700;margin:0;line-height:1.2}
+.sub{color:var(--muted);font-size:.8rem;margin:0}
+.rate{display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--muted)}
+.rate select{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:4px 6px}
+
+/* language route — like an origin → destination row */
+.route{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
+.lang{min-width:0;display:flex;flex-direction:column;gap:2px}
+.lang label{font-size:.7rem;letter-spacing:.06em;color:var(--muted)}
+.lang select{width:100%;min-width:0;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px;font-family:var(--f-display);font-weight:600;font-size:.95rem}
+.code{font-family:var(--f-mono);font-size:.7rem;color:var(--muted);direction:ltr;text-align:right}
+.swap{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);display:grid;place-items:center;font-size:1.1rem;transition:transform .25s}
+.swap:active{transform:rotate(180deg)}
+
+/* ticket */
+.ticket{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.stub{padding:14px;display:flex;flex-direction:column;gap:8px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.tag{font-size:.72rem;letter-spacing:.05em;color:var(--muted);font-weight:600}
+textarea{width:100%;min-height:110px;resize:vertical;border:1px solid var(--line);background:var(--surface-2);border-radius:12px;padding:12px;font-size:1.05rem;line-height:1.6}
+textarea:focus{outline:none;border-color:var(--accent)}
+.hint{font-size:.78rem;color:var(--muted);margin:0}
+.perf{height:0;border-top:2px dashed var(--line);position:relative;margin:0 14px}
+.perf::before,.perf::after{content:"";position:absolute;top:-11px;width:20px;height:20px;border-radius:50%;background:var(--bg);border:1px solid var(--line)}
+.perf::before{right:-25px}.perf::after{left:-25px}
+.out{padding:14px;display:flex;flex-direction:column;gap:8px;min-height:120px}
+.out-text{font-family:var(--f-display);font-size:1.35rem;font-weight:600;line-height:1.45;margin:0;overflow-wrap:anywhere}
+.out-text.placeholder{color:var(--muted);font-size:1rem;font-weight:400}
+.phon{font-size:.9rem;color:var(--accent);margin:0}
+.src-badge{font-size:.7rem;padding:2px 8px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted)}
+
+.btn{border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:8px 12px;font-size:.85rem;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn.go{background:var(--go);color:#fff;border-color:transparent}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.5;cursor:default}
+.btns{display:flex;gap:6px;flex-wrap:wrap}
+.btn svg{width:16px;height:16px}
+
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:.8rem}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+h2{font-family:var(--f-display);font-size:1rem;margin:0}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;gap:10px;align-items:flex-start}
+.item .txt{flex:1;min-width:0}
+.item .s{font-size:.82rem;color:var(--muted);margin:0;overflow-wrap:anywhere}
+.item .t{font-family:var(--f-display);font-weight:600;font-size:1.05rem;margin:2px 0 0;overflow-wrap:anywhere}
+.item .p{font-size:.8rem;color:var(--accent);margin:2px 0 0}
+.item .acts{display:flex;flex-direction:column;gap:6px}
+.icon-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);display:grid;place-items:center;font-size:1rem}
+.icon-btn.go{background:var(--go-soft);border-color:transparent;color:var(--go)}
+.icon-btn svg{width:18px;height:18px}
+.empty{color:var(--muted);font-size:.85rem;text-align:center;padding:16px;border:1px dashed var(--line);border-radius:12px}
+
+/* conversation */
+.convo{display:flex;flex-direction:column;gap:10px}
+.bubble{max-width:88%;border-radius:14px;padding:10px 12px;border:1px solid var(--line);background:var(--surface)}
+.bubble.a{align-self:flex-start;border-top-right-radius:4px}
+.bubble.b{align-self:flex-end;background:var(--accent-soft);border-color:transparent;border-top-left-radius:4px}
+.bubble .who{font-size:.7rem;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.bubble .o{font-size:.85rem;color:var(--muted);margin:4px 0 0}
+.bubble .tr{font-family:var(--f-display);font-weight:600;margin:2px 0 0;overflow-wrap:anywhere}
+.composer{display:grid;gap:8px}
+.speaker{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.speaker .line{display:flex;gap:6px}
+.speaker input{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:9px 10px}
+
+.search{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px}
+
+.notice{font-size:.8rem;border-radius:10px;padding:8px 10px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted)}
+.notice.warn{color:var(--warn)}
+
+/* bottom tab bar */
+nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
+nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+nav.tabs button{background:none;border:0;padding:10px 4px 12px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.75rem;color:var(--muted);font-weight:600}
+nav.tabs button svg{width:22px;height:22px}
+nav.tabs button[aria-selected="true"]{color:var(--accent)}
+
+/* show-to-local overlay */
+.show{position:fixed;inset:0;z-index:40;background:var(--bg);display:flex;flex-direction:column;
+  padding:calc(env(safe-area-inset-top,0px) + 16px) max(20px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 20px) max(20px,env(safe-area-inset-left,0px))}
+.show .mid{flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;text-align:center;min-height:0;overflow:auto}
+.show .big{font-family:var(--f-display);font-weight:700;font-size:clamp(1.8rem,8vw,3.4rem);line-height:1.3;margin:0;overflow-wrap:anywhere;text-wrap:balance}
+.show .small{color:var(--muted);margin:0}
+.show .bar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+
+.mic{width:64px;height:64px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none;box-shadow:0 4px 14px color-mix(in srgb,var(--accent) 35%,transparent)}
+.mic svg{width:28px;height:28px}
+.mic.on{background:var(--go);color:#fff;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 10px color-mix(in srgb,var(--go) 20%,transparent)}}
+.mic-row{display:flex;align-items:center;gap:12px}
+.mic-row .hint{flex:1;min-width:0}
+.mic-sm{width:40px;height:40px;border-radius:10px;border:0;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.mic-sm svg{width:20px;height:20px}
+.mic-sm.on{background:var(--go);color:#fff}
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);transform:translateX(-50%);z-index:50;background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:999px;font-size:.85rem;font-weight:600;max-width:90vw;text-align:center}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.speaking .out-text{color:var(--go)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16l20-7-6 12-3-6-6 3z"/><path d="M13 15l9-6"/></svg></div>
+      <div><h1>Travel Voice</h1><p class="sub">مترجم السفر بالصوت والنص</p></div>
+    </div>
+    <label class="rate">سرعة النطق
+      <select id="rate"><option value="0.8">بطيء</option><option value="1" selected>عادي</option><option value="1.2">سريع</option></select>
+    </label>
+  </header>
+
+  <section class="route" aria-label="اتجاه الترجمة">
+    <div class="lang"><label for="srcLang">من</label><select id="srcLang"></select><span class="code" id="srcCode"></span></div>
+    <button class="swap" id="swap" aria-label="تبديل اللغتين">⇄</button>
+    <div class="lang"><label for="tgtLang">إلى</label><select id="tgtLang"></select><span class="code" id="tgtCode"></span></div>
+  </section>
+
+  <!-- TRANSLATE -->
+  <section id="tab-live" class="panel" style="display:flex;flex-direction:column;gap:14px">
+    <div class="ticket" id="ticket">
+      <div class="stub">
+        <div class="row"><span class="tag" id="srcTag">النص الأصلي</span>
+          <div class="btns">
+            <button class="btn ghost" id="speakSrc" aria-label="نطق النص الأصلي"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 010 7"/></svg></button>
+            <button class="btn ghost" id="clear">مسح</button>
+          </div>
+        </div>
+        <div class="mic-row"><button class="mic" id="micMain" data-mic="main" aria-label="تكلّم"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 17v5M8 22h8"/></svg></button><p class="hint" id="micHint">اضغط الميكروفون وتكلّم، ثم تُترجم جملتك وتُنطق تلقائياً.</p></div>
+        <textarea id="src" maxlength="500" placeholder="اكتب جملتك، أو اضغط على ميكروفون لوحة المفاتيح 🎤 وتكلم"></textarea>
+        <div class="row">
+          <p class="hint" id="count">0 / 500</p>
+          <button class="btn primary" id="go">ترجم وانطق</button>
+        </div>
+      </div>
+      <div class="perf" aria-hidden="true"></div>
+      <div class="out" id="outBox" aria-live="polite">
+        <div class="row"><span class="tag" id="tgtTag">الترجمة</span><span class="src-badge" id="engine" hidden></span></div>
+        <p class="out-text placeholder" id="out">ستظهر الترجمة هنا.</p>
+        <p class="phon" id="phon" hidden></p>
+        <div class="btns" id="outActions" hidden>
+          <button class="btn go" id="speakOut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 010 7"/><path d="M19 5a9 9 0 010 14"/></svg>انطق</button>
+          <button class="btn" id="showOut">اعرضها كبيرة</button>
+          <button class="btn" id="copyOut">نسخ</button>
+          <button class="btn" id="favOut">☆ حفظ</button>
+        </div>
+      </div>
+    </div>
+    <div class="notice" id="voiceNote" hidden></div>
+    <div>
+      <p class="hint" style="margin-bottom:6px">جمل جاهزة:</p>
+      <div class="chips" id="quick"></div>
+    </div>
+    <div class="row"><h2>آخر الترجمات</h2><button class="btn ghost" id="clearHist">مسح السجل</button></div>
+    <div class="list" id="hist"></div>
+  </section>
+
+  <!-- CONVERSATION -->
+  <section id="tab-dual" class="panel" hidden style="flex-direction:column;gap:14px">
+    <div class="row"><h2>محادثة وجهاً لوجه</h2><button class="btn ghost" id="clearConvo">مسح المحادثة</button></div>
+    <p class="hint">أنت تكتب بلغتك، والطرف الآخر يكتب بلغته على نفس الهاتف. كل رسالة تُترجم وتُنطق للطرف المقابل.</p>
+    <div class="convo" id="convo"></div>
+    <div class="composer">
+      <div class="speaker">
+        <span class="tag" id="aLabel">أنت</span>
+        <div class="line"><button class="mic-sm" data-mic="a" aria-label="تكلّم"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 17v5M8 22h8"/></svg></button><input id="inA" placeholder="اكتب أو تكلّم بلغتك…"><button class="btn primary" id="sendA">إرسال</button></div>
+      </div>
+      <div class="speaker">
+        <span class="tag" id="bLabel">الطرف الآخر</span>
+        <div class="line"><button class="mic-sm" data-mic="b" aria-label="Speak"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 17v5M8 22h8"/></svg></button><input id="inB" dir="auto" placeholder="Type here…"><button class="btn" id="sendB">Send</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PHRASES -->
+  <section id="tab-phrases" class="panel" hidden style="flex-direction:column;gap:12px">
+    <input class="search" id="q" type="search" placeholder="ابحث عن عبارة…">
+    <div class="chips" id="cats"></div>
+    <div class="list" id="phrases"></div>
+  </section>
+</div>
+
+<nav class="tabs" role="tablist">
+  <div class="in">
+    <button role="tab" data-tab="live" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5h9M8.5 3v2M6 5c0 4 3 7 6 8M11 5c-1 4-4 7-7 8"/><path d="M13 21l4-9 4 9M14.5 18h5"/></svg>ترجمة</button>
+    <button role="tab" data-tab="dual" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 5h12v8H8l-5 4z"/><path d="M15 9h6v8l-3-2h-6v-2"/></svg>محادثة</button>
+    <button role="tab" data-tab="phrases" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 4h11a3 3 0 013 3v13H7a3 3 0 01-3-3z"/><path d="M4 17a3 3 0 013-3h11"/></svg>عبارات</button>
+  </div>
+</nav>
+
+<div class="show" id="show" hidden role="dialog" aria-modal="true" aria-label="عرض للطرف الآخر">
+  <div class="row"><span class="tag" id="showLang"></span><button class="btn" id="closeShow">إغلاق ✕</button></div>
+  <div class="mid">
+    <p class="big" id="showBig"></p>
+    <p class="small" id="showSmall"></p>
+  </div>
+  <div class="bar"><button class="btn go" id="showSpeak">🔊 انطق</button><button class="btn" id="showCopy">نسخ</button></div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+const LANGS = [
+  {code:'ar',speech:'ar-SA',name:'العربية',native:'العربية',flag:'🇯🇴'},
+  {code:'en',speech:'en-US',name:'الإنجليزية',native:'English',flag:'🇬🇧'},
+  {code:'fr',speech:'fr-FR',name:'الفرنسية',native:'Français',flag:'🇫🇷'},
+  {code:'es',speech:'es-ES',name:'الإسبانية',native:'Español',flag:'🇪🇸'},
+  {code:'tr',speech:'tr-TR',name:'التركية',native:'Türkçe',flag:'🇹🇷'},
+  {code:'de',speech:'de-DE',name:'الألمانية',native:'Deutsch',flag:'🇩🇪'},
+  {code:'it',speech:'it-IT',name:'الإيطالية',native:'Italiano',flag:'🇮🇹'},
+  {code:'ja',speech:'ja-JP',name:'اليابانية',native:'日本語',flag:'🇯🇵'},
+  {code:'zh',speech:'zh-CN',name:'الصينية',native:'中文',flag:'🇨🇳'},
+  {code:'ru',speech:'ru-RU',name:'الروسية',native:'Русский',flag:'🇷🇺'},
+  {code:'ko',speech:'ko-KR',name:'الكورية',native:'한국어',flag:'🇰🇷'},
+  {code:'pt',speech:'pt-BR',name:'البرتغالية',native:'Português',flag:'🇧🇷'}
+];
+const CATS = [['all','الكل'],['airport','✈️ المطار'],['hotel','🏨 الفندق'],['dining','🍽️ المطعم'],['directions','🚕 المواصلات'],['emergency','🚑 الطوارئ'],['shopping','🛍️ التسوق'],['favorites','⭐ المفضلة']];
+const PHRASES = [
+      {
+        id: 'p1', category: 'airport',
+        ar: 'أين تقع بوابة الصعود إلى الطائرة من فضلك؟',
+        en: 'Where is the boarding gate, please?',
+        fr: 'Où se trouve la porte d’embarquement, s’il vous plaît ?',
+        es: '¿Dónde está la puerta de embarque, por favor?',
+        tr: 'Uçağa biniş kapısı nerede acaba?',
+        de: 'Wo ist bitte das Boarding-Gate?',
+        it: 'Dov’è il gate d’imbarco, per favore?',
+        ja: '搭乗口はどこですか？',
+        zh: '请问登机口在哪里？',
+        ru: 'Где находится выход на посадку, пожалуйста?',
+        ko: '탑승구가 어디에 있나요?',
+        pt: 'Onde fica o portão de embarque, por favor?',
+        phonetic: {
+          en: 'وير إز ذا بوردينغ غيت بليز؟',
+          fr: 'أو سو تروف لا بورت دومباركومون سيل فو بليه؟',
+          es: 'دوندي إستا لا بويرتا دي إمباركي بور فافور؟',
+          tr: 'أوتشاغا بينيش كابيسي نيريدي أتشابا؟',
+          de: 'فو إست بيته داس بوردينغ غيت؟',
+          it: 'دوفي إيل غيت ديمباركو بير فافوري؟',
+          ja: 'توجوغوتشي وا دوكو ديس كا؟',
+          zh: 'تشينغ وين دينغ جي كو زاي نالي؟'
+        }
+      },
+      {
+        id: 'p2', category: 'airport',
+        ar: 'لم تصل حقيبتي على حزام الأمتعة، أين مكتب المفقودات؟',
+        en: 'My luggage did not arrive. Where is the lost and found office?',
+        fr: 'Mon bagage n’est pas arrivé. Où est le bureau des objets trouvés ?',
+        es: 'Mi equipaje no llegó. ¿Dónde está la oficina de objetos perdidos?',
+        tr: 'Bagajım gelmedi. Kayıp eşya bürosu nerede?',
+        de: 'Mein Gepäck ist nicht angekommen. Wo ist das Fundbüro?',
+        it: 'Il mio bagaglio non è arrivato. Dov’è l’ufficio oggetti smarriti?',
+        ja: '荷物が届いていません。遺失物取扱所はどこですか？',
+        zh: '我的行李没有到，请问失物招领处在哪里？',
+        ru: 'Мой багаж не прибыл. Где бюро находок?',
+        ko: '제 수하물이 도착하지 않았어요. 분실물 센터가 어디인가요?',
+        pt: 'Minha bagagem não chegou. Onde fica o achados e perdidos?',
+        phonetic: {
+          en: 'ماي لاغيج ديد نوت أرايف، وير إز ذا لوست آند فاوند أوفيس؟',
+          fr: 'مون باجاج ني با أريفي، أو إي لو بيرو ديز أوبجيه تروفي؟',
+          es: 'مي إكيباخي نو ييغو، دوندي إستا لا أوفيسينا دي أوبخيتوس بيرديدوس؟',
+          tr: 'باجاجم غيلميدي، كايب إشيا بوروسو نيريدي؟'
+        }
+      },
+      {
+        id: 'p3', category: 'hotel',
+        ar: 'لدي حجز فندقي باسمي لمدة ثلاث ليالٍ',
+        en: 'I have a hotel reservation under my name for three nights.',
+        fr: 'J’ai une réservation d’hôtel à mon nom pour trois nuits.',
+        es: 'Tengo una reserva de hotel a mi nombre por tres noches.',
+        tr: 'Adıma üç gecelik bir otel rezervasyonum var.',
+        de: 'Ich habe eine Hotelreservierung auf meinen Namen für drei Nächte.',
+        it: 'Ho una prenotazione alberghiera a mio nome per tre notti.',
+        ja: '私の名前で3泊のホテル予約があります。',
+        zh: '我用我的名字预订了三晚酒店。',
+        ru: 'У меня бронь в отеле на моё имя на три ночи.',
+        ko: '제 이름으로 3박 호텔 예약이 되어 있습니다.',
+        pt: 'Tenho uma reserva de hotel em meu nome para três noites.',
+        phonetic: {
+          en: 'آي هاف أ هوتيل ريزيرفيشن أندر ماي نيم فور ثري نايتس',
+          fr: 'جي أون ريزيرفاسيون دوتيل آ مون نوم بور تروا نوي',
+          es: 'تينغو أونا ريسيرفا دي أوتيل آ مي نومبري بور تريس نوتشيس',
+          tr: 'آدما أوتش غيجيليك بير أوتيل ريزيرفاسيونوم فار'
+        }
+      },
+      {
+        id: 'p4', category: 'hotel',
+        ar: 'ما هي كلمة المرور لشبكة الواي فاي، ومتى يبدأ الإفطار؟',
+        en: 'What is the Wi-Fi password, and what time does breakfast start?',
+        fr: 'Quel est le mot de passe Wi-Fi et à quelle heure commence le petit-déjeuner ?',
+        es: '¿Cuál es la contraseña del Wi-Fi y a qué hora empieza el desayuno?',
+        tr: 'Wi-Fi şifresi nedir ve kahvaltı saat kaçta başlıyor?',
+        de: 'Wie lautet das WLAN-Passwort und wann beginnt das Frühstück?',
+        it: 'Qual è la password del Wi-Fi e a che ora inizia la colazione?',
+        ja: 'Wi-Fiのパスワードは何ですか？朝食は何時からですか？',
+        zh: '请问Wi-Fi密码是多少？早餐几点开始？',
+        ru: 'Какой пароль от Wi-Fi и во сколько начинается завтрак?',
+        ko: '와이파이 비밀번호가 무엇인가요? 아침 식사는 몇 시에 시작하나요?',
+        pt: 'Qual é a senha do Wi-Fi e a que horas começa o café da manhã?',
+        phonetic: {
+          en: 'وات إز ذا واي فاي باسوورد آند وات تايم داز بريكفاست ستارت؟',
+          tr: 'واي فاي شيفريسي نيدير في كاهفالتي سات كاتشتا باشليور؟'
+        }
+      },
+      {
+        id: 'p5', category: 'dining',
+        ar: 'هل هذا الطبق يحتوي على مكسرات؟ أنا أعاني من حساسية',
+        en: 'Does this dish contain nuts? I have a severe allergy.',
+        fr: 'Ce plat contient-il des noix ? J’ai une allergie.',
+        es: '¿Este plato contiene frutos secos? Tengo alergia.',
+        tr: 'Bu yemekte kuruyemiş var mı? Alerjim var.',
+        de: 'Enthält dieses Gericht Nüsse? Ich habe eine Allergie.',
+        it: 'Questo piatto contiene noci? Ho un’allergia.',
+        ja: 'この料理にナッツは入っていますか？アレルギーがあります。',
+        zh: '这道菜含有坚果吗？我有过敏症。',
+        ru: 'В этом блюде есть орехи? У меня аллергия.',
+        ko: '이 요리에 견과류가 들어있나요? 알레르기가 있어요.',
+        pt: 'Este prato contém nozes? Eu tenho alergia.',
+        phonetic: {
+          en: 'داز ذيس ديش كونتين ناتس؟ آي هاف أ سيفير أليرجي',
+          fr: 'سو بلا كونتيان تيل دي نوا؟ جي أون أليرجي',
+          tr: 'بو ييميكتي كوروييميش فار مي؟ أليرجيم فار'
+        }
+      },
+      {
+        id: 'p6', category: 'dining',
+        ar: 'الحساب من فضلك، هل يمكنني الدفع بالبطاقة البنكية؟',
+        en: 'The bill, please. Can I pay by credit card?',
+        fr: 'L’addition, s’il vous plaît. Puis-je payer par carte bancaire ?',
+        es: 'La cuenta, por favor. ¿Puedo pagar con tarjeta?',
+        tr: 'Hesap lütfen. Kredi kartıyla ödeyebilir miyim?',
+        de: 'Die Rechnung, bitte. Kann ich mit Karte bezahlen?',
+        it: 'Il conto, per favore. Posso pagare con la carta?',
+        ja: 'お会計をお願いします。クレジットカードで払えますか？',
+        zh: '请买单，可以用信用卡支付吗？',
+        ru: 'Счёт, пожалуйста. Можно оплатить картой?',
+        ko: '계산서 부탁합니다. 카드로 결제할 수 있나요?',
+        pt: 'A conta, por favor. Posso pagar com cartão?',
+        phonetic: {
+          en: 'ذا بيل بليز، كان آي باي باي كريديت كارد؟',
+          fr: 'لاديسيون سيل فو بليه، بويج باييه بار كارت بانكير؟',
+          tr: 'هيساب لوتفين، كريدي كارتيلا أودييبييلير مييم؟'
+        }
+      },
+      {
+        id: 'p7', category: 'directions',
+        ar: 'كم تكلفة سيارة الأجرة إلى وسط المدينة؟',
+        en: 'How much does a taxi to the city center cost?',
+        fr: 'Combien coûte un taxi jusqu’au centre-ville ?',
+        es: '¿Cuánto cuesta un taxi hasta el centro de la ciudad?',
+        tr: 'Şehir merkezine taksi ne kadar tutar?',
+        de: 'Wie viel kostet ein Taxi ins Stadtzentrum?',
+        it: 'Quanto costa un taxi per il centro città?',
+        ja: '市内中心部までタクシーでいくらですか？',
+        zh: '去市中心坐出租车要多少钱？',
+        ru: 'Сколько стоит такси до центра города?',
+        ko: '시내 중심가까지 택시비가 얼마인가요?',
+        pt: 'Quanto custa um táxi até o centro da cidade?',
+        phonetic: {
+          en: 'هاو ماتش داز أ تاكسي تو ذا سيتي سنتر كوست؟',
+          fr: 'كومبيان كوت أن تاكسي جوسكو سونتر فيل؟',
+          tr: 'شهير ميركيزيني تاكسي ني كادار توتار؟'
+        }
+      },
+      {
+        id: 'p8', category: 'directions',
+        ar: 'أين تقع أقرب محطة مترو أو حافلات من هنا؟',
+        en: 'Where is the nearest metro or bus station from here?',
+        fr: 'Où est la station de métro ou de bus la plus proche ?',
+        es: '¿Dónde está la estación de metro o autobús más cercana?',
+        tr: 'Buraya en yakın metro veya otobüs durağı nerede?',
+        de: 'Wo ist die nächste U-Bahn- oder Bushaltestelle?',
+        it: 'Dov’è la stazione della metropolitana o dell’autobus più vicina?',
+        ja: 'ここから一番近い地下鉄かバスの駅はどこですか？',
+        zh: '离这里最近的地铁站或公交站在哪里？',
+        ru: 'Где ближайшая станция метро или автобусная остановка?',
+        ko: '여기서 가장 가까운 지하철역이나 버스 정류장이 어디인가요?',
+        pt: 'Onde fica a estação de metrô ou ônibus mais próxima?',
+        phonetic: {
+          en: 'وير إز ذا نيريست مترو أور باس ستيشن فروم هير؟',
+          tr: 'بورايا إن ياكن مترو فيا أوتوبوس دوراغي نيريدي؟'
+        }
+      },
+      {
+        id: 'p9', category: 'emergency',
+        ar: 'أحتاج إلى مساعدة طبية عاجلة، أين أقرب صيدلية؟',
+        en: 'I need urgent medical help. Where is the nearest pharmacy?',
+        fr: 'J’ai besoin d’une aide médicale urgente. Où est la pharmacie la plus proche ?',
+        es: 'Necesito ayuda médica urgente. ¿Dónde está la farmacia más cercana?',
+        tr: 'Acil tıbbi yardıma ihtiyacım var. En yakın eczane nerede?',
+        de: 'Ich brauche dringend ärztliche Hilfe. Wo ist die nächste Apotheke?',
+        it: 'Ho bisogno di assistenza medica urgente. Dov’è la farmacia più vicina?',
+        ja: '緊急の医療支援が必要です。一番近い薬局はどこですか？',
+        zh: '我需要紧急医疗帮助，最近的药店在哪里？',
+        ru: 'Мне нужна срочная медицинская помощь. Где ближайшая аптека?',
+        ko: '긴급 의료 도움이 필요합니다. 가장 가까운 약국이 어디인가요?',
+        pt: 'Preciso de ajuda médica urgente. Onde fica a farmácia mais próxima?',
+        phonetic: {
+          en: 'آي نيد أورجنت ميديكال هيلب، وير إز ذا نيريست فارماسي؟',
+          tr: 'آجيل طبي ياردما إهتياجم فار، إن ياكن إيجزاني نيريدي؟'
+        }
+      },
+      {
+        id: 'p10', category: 'emergency',
+        ar: 'لقد فقدت جواز سفري، أين تقع السفارة أو مركز الشرطة؟',
+        en: 'I lost my passport. Where is the embassy or police station?',
+        fr: 'J’ai perdu mon passeport. Où est l’ambassade ou le commissariat ?',
+        es: 'Perdí mi pasaporte. ¿Dónde está la embajada o la comisaría?',
+        tr: 'Pasaportumu kaybettim. Büyükelçilik veya polis merkezi nerede?',
+        de: 'Ich habe meinen Reisepass verloren. Wo ist die Botschaft oder Polizei?',
+        it: 'Ho perso il passaporto. Dov’è l’ambasciata o la polizia?',
+        ja: 'パスポートを紛失しました。大使館か警察署はどこですか？',
+        zh: '我的护照丢了，请问大使馆或警察局在哪里？',
+        ru: 'Я потерял паспорт. Где посольство или полицейский участок?',
+        ko: '여권을 잃어버렸어요. 대사관이나 경찰서가 어디인가요?',
+        pt: 'Perdi meu passaporte. Onde fica a embaixada ou delegacia?',
+        phonetic: {
+          en: 'آي لوست ماي باسبورت، وير إز ذي إمباسي أور بوليس ستيشن؟'
+        }
+      },
+      {
+        id: 'p11', category: 'shopping',
+        ar: 'كم سعر هذا المنتج؟ وهل يوجد خصم أو إعفاء ضريبي للسياح؟',
+        en: 'How much is this item? Is there a discount or tax refund for tourists?',
+        fr: 'Combien coûte cet article ? Y a-t-il une remise ou détaxe touristique ?',
+        es: '¿Cuánto cuesta este artículo? ¿Hay descuento o Tax Free para turistas?',
+        tr: 'Bu ürün ne kadar? Turistler için indirim veya Tax Free var mı?',
+        de: 'Wie viel kostet dieser Artikel? Gibt es Tax-Free für Touristen?',
+        it: 'Quanto costa questo articolo? C’è uno sconto o Tax Free per i turisti?',
+        ja: 'これはいくらですか？旅行者向けの免税や割引はありますか？',
+        zh: '这个多少钱？有游客退税或折扣吗？',
+        ru: 'Сколько это стоит? Есть ли скидка или Tax Free для туристов?',
+        ko: '이것은 얼마인가요? 관광객 할인이나 택스 리펀드가 되나요?',
+        pt: 'Quanto custa este item? Há desconto ou Tax Free para turistas?',
+        phonetic: {
+          en: 'هاو ماتش إز ذيس آيتم؟ إز ذير أ ديسكاونت أور تاكس ريفاند فور توريستس؟',
+          tr: 'بو أورون ني كادار؟ توريستلير إيتشين إنديريم فيا تاكس فري فار مي؟'
+        }
+      },
+      {
+        id: 'p12', category: 'shopping',
+        ar: 'هل لديكم مقاس أكبر أو لون آخر من هذه القطعة؟',
+        en: 'Do you have a larger size or another color of this item?',
+        fr: 'Avez-vous une taille plus grande ou une autre couleur ?',
+        es: '¿Tienen una talla más grande u otro color de esta prenda?',
+        tr: 'Bunun daha büyük bedeni veya başka rengi var mı?',
+        de: 'Haben Sie eine größere Größe oder eine andere Farbe davon?',
+        it: 'Avete una taglia più grande o un altro colore di questo articolo?',
+        ja: 'これの大きいサイズや他の色はありますか？',
+        zh: '这件有大一号或者其他颜色吗？',
+        ru: 'Есть ли размер побольше или другой цвет?',
+        ko: '이 제품 더 큰 사이즈나 다른 색상이 있나요?',
+        pt: 'Você tem um tamanho maior ou outra cor desta peça?',
+        phonetic: {
+          en: 'دو يو هاف أ لارجر سايز أور أناذر كولور أوف ذيس آيتم؟'
+        }
+      }
+    ];
+
+const $ = id => document.getElementById(id);
+const L = c => LANGS.find(l => l.code === c) || LANGS[0];
+const store = {
+  get(k, d){ try { const v = localStorage.getItem('tv_'+k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem('tv_'+k, JSON.stringify(v)); } catch(e){} }
+};
+const S = {
+  src: store.get('src','ar'), tgt: store.get('tgt','en'), cat:'all', q:'',
+  favs: store.get('favs', []),          // [{id, src:{lang,text}, tgt:{lang,text}, phon}]
+  hist: store.get('hist', []),
+  convo: [], last: null
+};
+const norm = t => (t||'').replace(/[؟?!.,،¿¡…]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
+const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let toastT;
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,2600); }
+
+/* ---------- Speech (text-to-speech) ---------- */
+const synth = 'speechSynthesis' in window ? window.speechSynthesis : null;
+let voices = [];
+function loadVoices(){ if(!synth) return; try { voices = synth.getVoices() || []; } catch(e){ voices=[]; } updateVoiceNote(); }
+if (synth){ loadVoices(); try { synth.onvoiceschanged = loadVoices; } catch(e){} setTimeout(loadVoices, 600); }
+function pickVoice(code){
+  const lang = L(code);
+  return voices.find(v => v.lang && v.lang.replace('_','-').toLowerCase() === lang.speech.toLowerCase())
+      || voices.find(v => v.lang && v.lang.toLowerCase().startsWith(code));
+}
+function updateVoiceNote(){
+  const n = $('voiceNote');
+  if (!synth){ n.hidden=false; n.className='notice warn'; n.textContent='هذا المتصفح لا يدعم النطق الصوتي. يمكنك عرض الترجمة كبيرة على الشاشة بدلاً من ذلك.'; return; }
+  if (voices.length && !pickVoice(S.tgt)){
+    n.hidden=false; n.className='notice warn';
+    n.textContent = `لا يوجد صوت ${L(S.tgt).name} مثبّت على جهازك. ثبّته من إعدادات الهاتف: تحويل النص إلى كلام، أو اعرض الترجمة كبيرة للطرف الآخر.`;
+  } else n.hidden = true;
+}
+function speak(text, code){
+  if (!text) return;
+  if (!synth){ toast('النطق غير مدعوم في هذا المتصفح'); return; }
+  try {
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = L(code).speech;
+    u.rate = parseFloat($('rate').value) || 1;
+    const v = pickVoice(code); if (v) u.voice = v;
+    const box = $('ticket');
+    u.onstart = () => box.classList.add('speaking');
+    u.onend = u.onerror = () => box.classList.remove('speaking');
+    synth.speak(u);
+  } catch(e){ toast('تعذر تشغيل الصوت'); }
+}
+
+/* ---------- Translation ---------- */
+let samplerP = null;
+function sampler(){ if (!samplerP) samplerP = (window.claude && window.claude.use) ? window.claude.use('sample').catch(()=>null) : Promise.resolve(null); return samplerP; }
+
+function phraseLookup(text, from, to){
+  const n = norm(text);
+  for (const p of PHRASES){
+    if (p[from] && norm(p[from]) === n && p[to]) return { text:p[to], phon:(p.phonetic||{})[to]||'', engine:'من القاموس' };
+  }
+  return null;
+}
+async function translate(text, from, to){
+  text = text.trim();
+  if (!text) return null;
+  if (from === to) return { text, phon:'', engine:'نفس اللغة' };
+  const hit = phraseLookup(text, from, to);
+  if (hit) return hit;
+  const sample = await sampler();
+  if (!sample) return await freeTranslate(text, from, to);
+  const wantPhon = to !== 'ar';
+  const prompt = `You are a travel interpreter. Translate the message from ${L(from).native} (${from}) to ${L(to).native} (${to}).
+Keep the meaning, tone and politeness natural for speaking to a local person. Translate only; do not answer or add anything.
+${wantPhon ? 'Also give "pronunciation": how an Arabic speaker would read the translation aloud, written in Arabic letters.' : 'Set "pronunciation" to "".'}
+Reply with JSON only: {"translation": string, "pronunciation": string}
+
+Message:
+"""${text}"""`;
+  const r = await sample.json(prompt, { modelTier:'quick' });
+  return { text: String(r.translation||'').trim(), phon: String(r.pronunciation||'').trim(), engine:'ترجمة ذكية' };
+}
+async function freeTranslate(text, from, to){
+  const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=' + from + '|' + to;
+  let res;
+  try { res = await fetch(url); } catch(e){ throw { code:'unavailable' }; }
+  if (!res.ok) throw { code:'net' };
+  const d = await res.json();
+  const out = d && d.responseData && d.responseData.translatedText;
+  if (!out) throw { code:'net' };
+  const el = document.createElement('textarea'); el.innerHTML = out;
+  return { text: el.value, phon:'', engine:'ترجمة مجانية' };
+}
+function errMsg(e){
+  if (e && e.code === 'unavailable') return 'الترجمة الحرة تعمل داخل Claude فقط. العبارات الجاهزة تعمل دائماً.';
+  if (e && e.code === 'not_granted') return 'لم يُسمح للصفحة بالترجمة. اسمح بها من قائمة الأذونات ثم أعد المحاولة.';
+  if (e && e.code === 'rate_limited') return 'طلبات كثيرة. انتظر قليلاً ثم أعد المحاولة.';
+  return 'تعذرت الترجمة الآن. تحقق من الاتصال وأعد المحاولة.';
+}
+
+/* ---------- Language UI ---------- */
+function fillSelects(){
+  for (const [id, val] of [['srcLang',S.src],['tgtLang',S.tgt]]){
+    const s = $(id);
+    s.innerHTML = LANGS.map(l => `<option value="${l.code}">${l.flag} ${l.name}</option>`).join('');
+    s.value = val;
+  }
+  syncLabels();
+}
+function syncLabels(){
+  const s=L(S.src), t=L(S.tgt);
+  $('srcCode').textContent = s.native + ' · ' + s.speech;
+  $('tgtCode').textContent = t.native + ' · ' + t.speech;
+  $('srcTag').textContent = 'من ' + s.name;
+  $('tgtTag').textContent = 'إلى ' + t.name;
+  $('aLabel').textContent = `أنت · ${s.flag} ${s.name}`;
+  $('bLabel').textContent = `${t.flag} ${t.native}`;
+  $('inB').placeholder = t.code==='ar' ? 'اكتب هنا…' : ({en:'Type here…',fr:'Écrivez ici…',es:'Escriba aquí…',tr:'Buraya yazın…',de:'Hier schreiben…',it:'Scrivi qui…',ja:'ここに入力…',zh:'在这里输入…',ru:'Пишите здесь…',ko:'여기에 입력…',pt:'Escreva aqui…'}[t.code]);
+  $('sendB').textContent = t.code==='ar' ? 'إرسال' : ({en:'Send',fr:'Envoyer',es:'Enviar',tr:'Gönder',de:'Senden',it:'Invia',ja:'送信',zh:'发送',ru:'Отправить',ko:'보내기',pt:'Enviar'}[t.code]);
+  store.set('src',S.src); store.set('tgt',S.tgt);
+  updateVoiceNote(); renderQuick(); renderPhrases();
+}
+$('srcLang').addEventListener('change', e => { S.src=e.target.value; syncLabels(); });
+$('tgtLang').addEventListener('change', e => { S.tgt=e.target.value; syncLabels(); if ($('src').value.trim()) run(false, false); });
+$('swap').addEventListener('click', () => {
+  [S.src,S.tgt] = [S.tgt,S.src];
+  if (S.last){ $('src').value = S.last.tgt.text; count(); }
+  fillSelects();
+  if ($('src').value.trim()) run(false, false);
+});
+
+/* ---------- Live translate ---------- */
+function count(){ $('count').textContent = `${$('src').value.length} / 500`; }
+$('src').addEventListener('input', count);
+let busy = false;
+async function run(autoSpeak = true, save = true){
+  const text = $('src').value.trim();
+  if (!text){ toast('اكتب جملة أولاً'); $('src').focus(); return; }
+  if (busy) return; busy = true;
+  const out=$('out'), go=$('go');
+  go.disabled = true; go.innerHTML = '<span class="spin"></span> جارٍ الترجمة';
+  out.className='out-text placeholder'; out.textContent='جارٍ الترجمة…';
+  $('phon').hidden=true; $('outActions').hidden=true; $('engine').hidden=true;
+  const from=S.src, to=S.tgt;
+  try {
+    const r = await translate(text, from, to);
+    out.className='out-text'; out.textContent=r.text;
+    out.dir = to==='ar' ? 'rtl' : 'ltr';
+    $('phon').hidden = !r.phon; $('phon').textContent = r.phon ? 'النطق: ' + r.phon : '';
+    $('engine').hidden=false; $('engine').textContent=r.engine;
+    $('outActions').hidden=false;
+    S.last = { src:{lang:from,text}, tgt:{lang:to,text:r.text}, phon:r.phon };
+    markFavBtn();
+    if (save && (!S.hist.length || S.hist[0].src.text!==text || S.hist[0].tgt.lang!==to)){
+      S.hist.unshift({...S.last, id:'h'+Date.now()}); S.hist = S.hist.slice(0,15); store.set('hist',S.hist); renderHist();
+    }
+    if (autoSpeak) speak(r.text, to);
+  } catch(e){
+    out.className='out-text placeholder'; out.textContent = errMsg(e);
+  } finally {
+    busy=false; go.disabled=false; go.textContent='ترجم وانطق';
+  }
+}
+$('go').addEventListener('click', () => run(true));
+$('src').addEventListener('keydown', e => { if (e.key==='Enter' && (e.ctrlKey||e.metaKey)) run(true); });
+$('clear').addEventListener('click', () => { $('src').value=''; count(); $('out').className='out-text placeholder'; $('out').textContent='ستظهر الترجمة هنا.'; $('phon').hidden=true; $('outActions').hidden=true; $('engine').hidden=true; S.last=null; $('src').focus(); });
+$('speakSrc').addEventListener('click', () => speak($('src').value.trim(), S.src));
+$('speakOut').addEventListener('click', () => S.last && speak(S.last.tgt.text, S.last.tgt.lang));
+$('copyOut').addEventListener('click', () => S.last && copy(S.last.tgt.text));
+$('showOut').addEventListener('click', () => S.last && openShow(S.last));
+
+function copy(text){
+  const done = () => toast('تم النسخ');
+  try { navigator.clipboard.writeText(text).then(done, () => fallback()); } catch(e){ fallback(); }
+  function fallback(){ const t=document.createElement('textarea'); t.value=text; t.style.position='fixed'; t.style.opacity='0'; document.body.appendChild(t); t.select(); try{document.execCommand('copy'); done();}catch(e){toast('حدّد النص وانسخه يدوياً');} t.remove(); }
+}
+
+/* ---------- Favorites ---------- */
+const favKey = e => `${e.src.lang}|${e.tgt.lang}|${norm(e.src.text)}`;
+function isFav(e){ return S.favs.some(f => favKey(f)===favKey(e)); }
+function toggleFav(e){
+  if (isFav(e)){ S.favs = S.favs.filter(f => favKey(f)!==favKey(e)); toast('أُزيلت من المفضلة'); }
+  else { S.favs.unshift({src:e.src,tgt:e.tgt,phon:e.phon||'',id:'f'+Date.now()}); toast('حُفظت في المفضلة'); }
+  store.set('favs',S.favs); markFavBtn(); renderPhrases(); renderHist();
+}
+function markFavBtn(){ if (S.last) $('favOut').textContent = isFav(S.last) ? '★ محفوظة' : '☆ حفظ'; }
+$('favOut').addEventListener('click', () => S.last && toggleFav(S.last));
+
+/* ---------- History ---------- */
+const spk = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 010 7"/></svg>';
+function itemHTML(e, i, kind){
+  const dirT = e.tgt.lang==='ar'?'rtl':'ltr', dirS = e.src.lang==='ar'?'rtl':'ltr';
+  return `<div class="item">
+    <div class="txt">
+      <p class="s" dir="${dirS}">${L(e.src.lang).flag} ${esc(e.src.text)}</p>
+      <p class="t" dir="${dirT}">${L(e.tgt.lang).flag} ${esc(e.tgt.text)}</p>
+      ${e.phon ? `<p class="p">النطق: ${esc(e.phon)}</p>` : ''}
+    </div>
+    <div class="acts">
+      <button class="icon-btn go" data-act="speak" data-kind="${kind}" data-i="${i}" aria-label="انطق">${spk}</button>
+      <button class="icon-btn" data-act="show" data-kind="${kind}" data-i="${i}" aria-label="اعرض كبيرة">⤢</button>
+      <button class="icon-btn" data-act="fav" data-kind="${kind}" data-i="${i}" aria-label="المفضلة">${isFav(e)?'★':'☆'}</button>
+    </div></div>`;
+}
+function renderHist(){
+  $('hist').innerHTML = S.hist.length ? S.hist.map((e,i)=>itemHTML(e,i,'hist')).join('')
+    : '<div class="empty">ترجماتك ستظهر هنا لتعيد نطقها بسرعة.</div>';
+}
+$('clearHist').addEventListener('click', () => { S.hist=[]; store.set('hist',[]); renderHist(); });
+
+/* ---------- Phrasebook ---------- */
+function phraseEntries(){
+  const src=S.src, tgt=S.tgt, q=norm(S.q);
+  let list;
+  if (S.cat==='favorites') list = S.favs.slice();
+  else list = PHRASES.filter(p => S.cat==='all' || p.category===S.cat).map(p => ({
+      src:{lang:src,text:p[src]||p.ar}, tgt:{lang:tgt,text:p[tgt]||p.en}, phon:(p.phonetic||{})[tgt]||'', id:p.id }));
+  if (q) list = list.filter(e => norm(e.src.text).includes(q) || norm(e.tgt.text).includes(q));
+  return list;
+}
+let shown = [];
+function renderPhrases(){
+  $('cats').innerHTML = CATS.map(([k,n]) => `<button class="chip" data-cat="${k}" aria-pressed="${S.cat===k}">${n}${k==='favorites'?` (${S.favs.length})`:''}</button>`).join('');
+  shown = phraseEntries();
+  $('phrases').innerHTML = shown.length ? shown.map((e,i)=>itemHTML(e,i,'phr')).join('')
+    : `<div class="empty">${S.cat==='favorites' ? 'لا توجد عبارات محفوظة بعد. اضغط ☆ على أي ترجمة لحفظها.' : 'لا توجد عبارة مطابقة.'}</div>`;
+}
+$('cats').addEventListener('click', e => { const b=e.target.closest('.chip'); if(!b) return; S.cat=b.dataset.cat; renderPhrases(); });
+$('q').addEventListener('input', e => { S.q=e.target.value; renderPhrases(); });
+
+function renderQuick(){
+  const picks = ['p1','p3','p7','p5','p9','p6'];
+  $('quick').innerHTML = picks.map(id => { const p=PHRASES.find(x=>x.id===id); const icon={airport:'✈️',hotel:'🏨',directions:'🚕',dining:'🍽️',emergency:'🚑'}[p.category]||'💬';
+    const t=(p[S.src]||p.ar); return `<button class="chip" data-quick="${id}" dir="auto">${icon} ${esc(t.length>28?t.slice(0,26)+'…':t)}</button>`; }).join('');
+}
+$('quick').addEventListener('click', e => { const b=e.target.closest('[data-quick]'); if(!b) return; const p=PHRASES.find(x=>x.id===b.dataset.quick); $('src').value=p[S.src]||p.ar; count(); run(true); });
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const arr = b.dataset.kind==='hist' ? S.hist : shown; const it = arr[+b.dataset.i]; if (!it) return;
+  if (b.dataset.act==='speak') speak(it.tgt.text, it.tgt.lang);
+  else if (b.dataset.act==='show') openShow(it);
+  else if (b.dataset.act==='fav') toggleFav(it);
+});
+
+/* ---------- Show to local ---------- */
+let showing = null;
+function openShow(e){
+  showing = e;
+  const t=L(e.tgt.lang);
+  $('showLang').textContent = `${t.flag} ${t.native}`;
+  $('showBig').textContent = e.tgt.text; $('showBig').dir = e.tgt.lang==='ar'?'rtl':'ltr';
+  $('showSmall').textContent = e.src.text;
+  $('show').hidden=false;
+}
+$('closeShow').addEventListener('click', () => { $('show').hidden=true; showing=null; });
+$('showSpeak').addEventListener('click', () => showing && speak(showing.tgt.text, showing.tgt.lang));
+$('showCopy').addEventListener('click', () => showing && copy(showing.tgt.text));
+document.addEventListener('keydown', e => { if (e.key==='Escape' && !$('show').hidden) $('closeShow').click(); });
+
+/* ---------- Conversation ---------- */
+function renderConvo(){
+  const c=$('convo');
+  if (!S.convo.length){ c.innerHTML='<div class="empty">ابدأ أنت بالكتابة في الأسفل، ثم ناول الهاتف للطرف الآخر ليرد بلغته.</div>'; return; }
+  c.innerHTML = S.convo.map((m,i) => `<div class="bubble ${m.who}">
+    <div class="who"><span>${m.who==='a'?'أنت':'الطرف الآخر'} · ${L(m.src.lang).flag} → ${L(m.tgt.lang).flag}</span>
+      ${m.pending?'<span class="spin"></span>':`<button class="icon-btn go" data-cv="${i}" aria-label="انطق" style="width:30px;height:30px">${spk}</button>`}</div>
+    <p class="o" dir="auto">${esc(m.src.text)}</p>
+    <p class="tr" dir="auto">${esc(m.pending?'…':m.tgt.text)}</p></div>`).join('');
+  c.lastElementChild.scrollIntoView({block:'nearest'});
+}
+$('convo').addEventListener('click', e => { const b=e.target.closest('[data-cv]'); if(!b) return; const m=S.convo[+b.dataset.cv]; speak(m.tgt.text, m.tgt.lang); });
+async function send(who){
+  const input = who==='a' ? $('inA') : $('inB');
+  const text = input.value.trim(); if (!text) return;
+  const from = who==='a'?S.src:S.tgt, to = who==='a'?S.tgt:S.src;
+  input.value='';
+  const m = {who, src:{lang:from,text}, tgt:{lang:to,text:''}, pending:true};
+  S.convo.push(m); renderConvo();
+  try { const r = await translate(text, from, to); m.tgt.text=r.text; m.pending=false; renderConvo(); speak(r.text, to); }
+  catch(e){ m.tgt.text=errMsg(e); m.pending=false; renderConvo(); }
+}
+$('sendA').addEventListener('click', ()=>send('a')); $('sendB').addEventListener('click', ()=>send('b'));
+$('inA').addEventListener('keydown', e => e.key==='Enter' && send('a'));
+$('inB').addEventListener('keydown', e => e.key==='Enter' && send('b'));
+$('clearConvo').addEventListener('click', () => { S.convo=[]; renderConvo(); });
+
+/* ---------- Microphone ---------- */
+const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, recBtn = null;
+const micTarget = k => k==='main' ? $('src') : k==='a' ? $('inA') : $('inB');
+function keyboardFallback(k){
+  const el = micTarget(k); el.focus();
+  if (k==='main') $('micHint').textContent = 'اضغط زر 🎤 في لوحة المفاتيح التي ظهرت الآن وتكلّم، ثم اضغط "ترجم وانطق".';
+  toast('تكلّم عبر زر 🎤 في لوحة المفاتيح');
+}
+function stopMic(){ if (recBtn) recBtn.classList.remove('on'); recBtn=null; if (rec){ try{rec.abort();}catch(e){} rec=null; } }
+function startMic(btn){
+  const k = btn.dataset.mic;
+  if (recBtn === btn){ try{ rec.stop(); }catch(e){ stopMic(); } return; }
+  stopMic();
+  if (!Rec){ keyboardFallback(k); return; }
+  const lang = k==='b' ? S.tgt : S.src;
+  let r; try { r = new Rec(); } catch(e){ keyboardFallback(k); return; }
+  rec = r; recBtn = btn; btn.classList.add('on');
+  r.lang = L(lang).speech; r.continuous = false; r.interimResults = true; r.maxAlternatives = 1;
+  let finalText = '', got = false;
+  const el = micTarget(k); el.value = '';
+  r.onresult = ev => {
+    got = true;
+    const res = ev.results[ev.results.length-1];
+    const txt = (res[0] && res[0].transcript || '').trim();
+    el.value = txt; if (k==='main') count();
+    if (res.isFinal) finalText = txt;
+  };
+  r.onerror = ev => {
+    const blocked = ['not-allowed','service-not-allowed','audio-capture','network'].includes(ev.error);
+    stopMic();
+    if (blocked) keyboardFallback(k);
+    else if (ev.error==='no-speech') toast('لم أسمع شيئاً، حاول مرة أخرى');
+  };
+  r.onend = () => {
+    const mine = recBtn === btn; stopMic();
+    const text = (finalText || el.value).trim();
+    if (!mine || !text) return;
+    if (k==='main') run(true); else send(k);
+  };
+  try { r.start(); } catch(e){ stopMic(); keyboardFallback(k); }
+  // if the browser silently never starts, fall back after 4s with no result
+  setTimeout(() => { if (recBtn===btn && !got && rec===r){ stopMic(); keyboardFallback(k); } }, 8000);
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-mic]'); if (b) startMic(b); });
+
+/* ---------- Tabs ---------- */
+document.querySelectorAll('nav.tabs button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('nav.tabs button').forEach(x => x.setAttribute('aria-selected', x===b));
+  ['live','dual','phrases'].forEach(t => { const p=$('tab-'+t); p.hidden = t!==b.dataset.tab; if (!p.hidden) p.style.display='flex'; });
+  window.scrollTo(0,0);
+}));
+
+$('rate').addEventListener('change', e => store.set('rate', e.target.value));
+$('rate').value = store.get('rate','1');
+
+/* ---------- Start with a sample so the first screen shows what it does ---------- */
+fillSelects(); renderHist(); renderConvo(); count();
+if (!S.hist.length){
+  const p = PHRASES[0];
+  $('src').value = p[S.src] || p.ar; count();
+  run(false, false);
+}
+})();
+</script>
+</body>
+</html>
